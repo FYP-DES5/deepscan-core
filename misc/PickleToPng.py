@@ -7,7 +7,7 @@ import numpy as np
 
 arr = pickle.load(open(sys.argv[-1], "r"))
 if len(arr.shape) == 2:
-  arr = arr / 8
+  arr = np.vectorize(lambda x: x / 8)(arr)
   arr = np.dstack((arr, arr, arr))
 else:
   arr = arr[:, :, [2, 1, 0]]

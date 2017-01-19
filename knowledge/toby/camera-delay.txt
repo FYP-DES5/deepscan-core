@@ -1,0 +1,27 @@
+The time between adb signal to actual android snap is about 1.0~1.1 seconds.
+
+The capture() function returns almost as the same time the image is taken.
+
+Using this test, I found out that it takes at least 0.8 seconds for the phone
+to write the image into storage. (i.e. t=0.7 failed)
+
+t = 2
+while x is not None:
+  android.capture()
+  time.sleep(t)
+  x = android.fetchImage()
+  t = t - 0.1
+
+Therefore, the optimal way to get a synced image without going into
+multithreading is as such:
+
+
+from util import android, kinect
+import time
+
+kinect.getDepth() # to "warm up" the kinect
+
+android.capture()
+depth = kinect.getDepth()
+time.sleep(1)
+img = android.fetchImage()
