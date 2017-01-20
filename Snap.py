@@ -1,15 +1,11 @@
 """Snap 3 photos"""
 
-from util import format, android, kinect
+from util import capture, format
 import time
 
-kinect.getDepth() # to "warm up" the kinect
+capture.warmupKinect()
 
-android.capture() # return time close to actual capture
-depth = kinect.getDepth()
-video = kinect.getVideo()
-time.sleep(1)
-img = android.fetchImage()
+img, depth, video = capture.snap(3, 0)
 
 format.saveImage('vid.png', video, bgr=True)
 format.saveImage('dep.png', depth)
