@@ -14,8 +14,9 @@ criteria = (cv2.TERM_CRITERIA_EPS + cv2.TERM_CRITERIA_MAX_ITER, 30, 0.001)
 # chessboardShape = (12, 12)
 # images = [glob.glob('test/calibration/Left*.jpg'), glob.glob('test/calibration/Right*.jpg')]
 chessboardShape = (9, 7)
-images = [glob.glob('test/calibration/img_*'), glob.glob('test/calibration/vid_*')]
-resize = True
+# images = [glob.glob('test/calibration/img_*'), glob.glob('test/calibration/vid_*')]
+images = [glob.glob('test/phones/2*'), glob.glob('test/phones/P*')]
+resize = False
 
 objp = np.zeros((chessboardShape[1]*chessboardShape[0],3), np.float32)
 objp[:,:2] = np.mgrid[0:chessboardShape[0],0:chessboardShape[1]].T.reshape(-1,2)

@@ -1,13 +1,20 @@
+#! /usr/local/bin/python
+
 """Snap 3 photos"""
 
-from util import capture, format
+from __future__ import print_function 
+from util import capture, format, kinect
 import time
+from pylibfreenect2 import Frame, Registration
+import numpy as np
 
+kinect.init('v2')
 capture.warmupKinect()
 
-img, depth, video, ir = capture.snap(3, 0)
+undistorted, registered, color_depth_map = kinect.getRegister()
 
-format.saveImage('vid.png', video, bgr=True)
-format.saveImage('dep.png', depth)
-format.saveImage('img.jpg', img)
-format.saveImage('ir.png', ir)
+kinect.stop()
+
+for i in range(color_depth_map.shape[0]):
+	print(color_depth_map[i], end=',')
+print("")
