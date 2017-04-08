@@ -1,6 +1,7 @@
 from __future__ import print_function
 import numpy as np
 LA = np.linalg
+import cv2
 from scipy.sparse import linalg as spla
 import vtk
 from util import kinect, format
@@ -130,7 +131,7 @@ def conformalGenAB(points, pd, fixed):
             if 0 == cellarray.GetNextCell(cell):
                 break
             triangles[i] = [cell.GetId(0), cell.GetId(1), cell.GetId(2)]
-            if np.cross(points[triangles[i][1]] - points[triangles[i][0]], 
+            if np.cross(points[triangles[i][1]] - points[triangles[i][0]],
                         points[triangles[i][2]] - points[triangles[i][0]])[2] < 0:
                 triangles[i][[0, 1]] = triangles[i][[1, 0]]
             i += 1
@@ -196,7 +197,8 @@ def xToPoints(x, fixed):
         for i in range(len(newPoints) * 2 - 1)])
     return newPoints
 
-kinect.init('v2')
+def start():
+    kinect.init('v2')
 
 zeroImage = None
 
@@ -234,7 +236,7 @@ def scan():
     if True: # does conformal mapping
         fixed = np.array([[0, 0, 0],
                           [len(ptArray) - 1, 1, 1]])
-        
+
         a, b = conformalGenAB(ptArray, pd, fixed)
         x = solveSparse(a, b)
         newPoints = xToPoints(x, fixed)

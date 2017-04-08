@@ -1,6 +1,7 @@
-import freenect
+# import freenect
 import numpy as np
 import cv2
+
 
 #__ctx = freenect.init()
 #__dev = freenect.open_device(__ctx, 0)
