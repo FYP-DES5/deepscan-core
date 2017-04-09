@@ -42,7 +42,7 @@ def init(version):
         __v2["device"].setIrAndDepthFrameListener(__v2["listener"])
         __v2["device"].start()
 
-def getRegister(zeroImage):
+def getRegister(zeroImage, blurValue = 5, threshold = 170):
     from pylibfreenect2 import Freenect2, SyncMultiFrameListener
     from pylibfreenect2 import FrameType, Registration, Frame
     global __v2
@@ -52,7 +52,7 @@ def getRegister(zeroImage):
     __v2["frames"] = __v2["listener"].waitForNewFrame()
     color = np.copy(__v2["frames"]["color"].asarray())
     arr = __v2["frames"]["depth"].asarray()
-    cv2.medianBlur(arr, 5, arr)
+    cv2.medianBlur(arr, blurValue, arr)
     registration = Registration(__v2["device"].getIrCameraParams(),
         __v2["device"].getColorCameraParams())
     registration.apply(
@@ -62,21 +62,38 @@ def getRegister(zeroImage):
     # points = [None] * (512 * 424)
     points = []
     tcoords = []
-
+    diffPoints = np.zeros_like(color_depth_map, dtype=np.uint8)
+    diff = np.zeros_like((424, 512), dtype=int)
+    mapping = np.zeros((424, 512, 2), dtype=int)
     for i in range(424):
         for j in range(512):
             colorId = color_depth_map[512 * i + j]
             x = colorId % 1920
             y = colorId / 1920
-            different = np.linalg.norm(np.zeros(color[y][x].shape) + color[y][x] - zeroImage[y][x]) > 170
-            if colorId == -1 or not different or (i % 15 + j % 15) > 0:
+            if colorId == -1:
                 continue
-            point = registration.getPointXYZ(undistorted, i, j)
-            print colorId, i, j, point
-            tcoord = (x / 1920.0, 1 - y / 1080.0)
-            # points[512 * i + j] = {"point": point, "tcoord": tcoord}
-            points.append(point)
-            tcoords.append(tcoord)
+            mapping[i][j] = y, x
+            difference = np.linalg.norm(np.zeros_like(color[y][x], dtype=float)
+                    + color[y][x] - zeroImage[y][x])
+            diff[i][j] = difference
+            if not difference > threshold:
+                continue
+            diffPoints[i][j] = 255
+    kernel = np.ones((3, 3), dtype=np.uint8)
+    numpy.savetxt('diffPoints.txt', diffPoints)
+    numpy.savetxt('diff.txt', diff)
+    cv2.erode(diff, kernel, iterations=3)
+    cv2.dilate(diff, kernel, iterations=6)
+    cv2.erode(diff, kernel, iterations=3)
+    numpy.savetxt('diffPoints_after.txt', diffPoints)
+    counter = 0
+    for i in range(424):
+        for j in range(512):
+            if diffPoints[i][j] == 255:
+                point = registration.getPointXYZ(undistorted, i, j)
+                tcoord = (x / 1920.0, 1 - y / 1080.0)
+                points.append(point)
+                tcoords.append(tcoord)
     return color, points, tcoords
 
 
