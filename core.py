@@ -210,6 +210,7 @@ def scan():
     global zeroImage
     if zeroImage is None:
         print('please run zero() first')
+        return
     img, ptArray, tcoordArray = kinect.getRegister(zeroImage)
     format.saveImage('raw.png', img)
     points = genPoints(ptArray)
@@ -244,3 +245,7 @@ def scan():
     renWin.Render()
     iren.Start()
     screenshot(renWin, 'result.png')
+
+a = start
+b = zero
+c = scan

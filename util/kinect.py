@@ -42,7 +42,7 @@ def init(version):
         __v2["device"].setIrAndDepthFrameListener(__v2["listener"])
         __v2["device"].start()
 
-def getRegister(zeroImage, blurValue = 5, threshold = 170):
+def getRegister(zeroImage, blurValue = 5, threshold = 3):
     from pylibfreenect2 import Freenect2, SyncMultiFrameListener
     from pylibfreenect2 import FrameType, Registration, Frame
     global __v2
@@ -64,6 +64,8 @@ def getRegister(zeroImage, blurValue = 5, threshold = 170):
     tcoords = []
     diffPoints = np.zeros((424, 512), dtype=np.uint8)
     diff = np.zeros((424, 512), dtype=int)
+    colorG = cv2.cvtColor(color, cv2.COLOR_BGR2GRAY)
+    zeroImageG = cv2.cvtColor(zeroImage, cv2.COLOR_BGR2GRAY)
     for i in range(424):
         for j in range(512):
             colorId = color_depth_map[512 * i + j]
@@ -71,13 +73,22 @@ def getRegister(zeroImage, blurValue = 5, threshold = 170):
             y = colorId / 1920
             if colorId == -1:
                 continue
-            difference = np.linalg.norm(np.zeros_like(color[y][x], dtype=float)
-                    + color[y][x] - zeroImage[y][x])
+            #difference = np.linalg.norm(np.zeros_like(color[y][x], dtype=float)
+            #        + color[y][x] - zeroImage[y][x])
+            difference = colorG[y][x] - zeroImageG[y][x]
             diff[i][j] = difference
             if not difference > threshold:
                 continue
             diffPoints[i][j] = 255
     kernel = np.ones((3, 3), dtype=np.uint8)
+    diff2 = np.zeros_like(diff, dtype=np.uint8)
+    for i in range(424):
+        for j in range(512):
+            diff2[i][j] = diff[i][j] if diff[i][j] < 256 else 255
+    cv2.imwrite('/Users/admin/Desktop/diff.png', diff2)
+    cv2.imwrite('/Users/admin/Desktop/diffpoints.png', diffPoints)
+    cv2.imwrite('/Users/admin/Desktop/zeroImage.png', zeroImage)
+    cv2.imwrite('/Users/admin/Desktop/color.png', color)
     np.savetxt('/Users/admin/Desktop/diffPoints.txt', diffPoints)
     np.savetxt('/Users/admin/Desktop/diff.txt', diff)
     cv2.erode(diffPoints, kernel, diffPoints, iterations=3)
