@@ -55,10 +55,13 @@ def getRegister(zeroImage, blurValue = 5, threshold = 3):
     denoise.inpaint(color, depth)
     registration = Registration(__v2["device"].getIrCameraParams(),
         __v2["device"].getColorCameraParams())
-    registration.apply(color, depth, undistorted, registered,
+    registration.apply(__v2["frames"]["color"], __v2["frames"]["depth"],
+        undistorted, registered,
         color_depth_map=color_depth_map)
-    diff = cv2.cvtColor(color, cv2.COLOR_BGR2GRAY) - cv2.cvtColor(zeroImage, cv2.COLOR_BGR2GRAY)
-    ret, mask = cv2.threshold(diff, np.average(diff), 255, cv2.THRESH_BINARY)
+    diff = np.zeros(color.shape[0:2], dtype=np.int16) + cv2.cvtColor(color, cv2.COLOR_BGR2GRAY) - cv2.cvtColor(zeroImage, cv2.COLOR_BGR2GRAY)
+    avg = np.average(diff)
+    print avg
+    ret, mask = cv2.threshold(diff, avg, 255, cv2.THRESH_BINARY)
     # points = [None] * (512 * 424)
     points = []
     tcoords = []
@@ -75,7 +78,7 @@ def getRegister(zeroImage, blurValue = 5, threshold = 3):
     for i in range(424):
         for j in range(512):
             colorId = color_depth_map[512 * i + j]
-            if mask[i][j] == 255 and colorId != -1:
+            if colorId != -1: #mask[i][j] == 255 and colorId != -1:
                 registerPoint(i, j, colorId)
     __v2["listener"].release(__v2["frames"])
     return color, points, tcoords
