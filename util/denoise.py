@@ -1,7 +1,7 @@
 import cv2
 import gdfmm
 
-def voxelDownsample(points, tcoords):
+def voxelDownsample(points, tcoords, mask):
     return points, tcoords
 
 def inpaint(bgr, depth):

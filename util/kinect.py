@@ -64,24 +64,24 @@ def getRegister(zeroImage, blurValue = 5, threshold = 3):
     avg = np.average(diff)
     print avg
     ret, mask = cv2.threshold(diff, avg, 255, cv2.THRESH_BINARY)
+    _, contours, hierachy = cv2.findContours(depth, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+    largestContour = max(contours, key=cv2.contourArea)
+    mask[:] = 0 # reset
+    cv2.drawContours(mask, [largestContour], 0, (255,), -1)
     # points = [None] * (512 * 424)
     points = []
     tcoords = []
-    def registerPoint(i, j, colorId):
+    def registerPoint(x, y, i, j):
         point = registration.getPointXYZ(undistorted, i, j)
-        x, y = colorId % 1920, colorId / 1920
         tcoord = (x / 1920.0, 1 - y / 1080.0)
         points.append(point)
         tcoords.append(tcoord)
-    kernel = np.ones((3, 3), dtype=np.uint8)
-    cv2.erode(mask, kernel, mask, iterations=3)
-    cv2.dilate(mask, kernel, mask, iterations=6)
-    cv2.erode(mask, kernel, mask, iterations=3)
     for i in range(424):
         for j in range(512):
             colorId = color_depth_map[512 * i + j]
-            if mask[i][j] == 255 and colorId != -1:
-                registerPoint(i, j, colorId)
+            x, y = colorId % 1920, colorId / 1920
+            if mask[y][x] == 255 and colorId != -1:
+                registerPoint(x, y, i, j)
     points, tcoords = denoise.voxelDownsample(points, tcoords)
     __v2["listener"].release(__v2["frames"])
     return color, points, tcoords
