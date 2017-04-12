@@ -59,6 +59,8 @@ def getRegister(zeroImage, blurValue = 5, threshold = 3):
         undistorted, registered,
         color_depth_map=color_depth_map)
     diff = np.zeros(color.shape[0:2], dtype=np.int16) + cv2.cvtColor(color, cv2.COLOR_BGR2GRAY) - cv2.cvtColor(zeroImage, cv2.COLOR_BGR2GRAY)
+    diff = np.absolute(diff)
+    diff = np.array(diff, dtype=np.uint8)
     avg = np.average(diff)
     print avg
     ret, mask = cv2.threshold(diff, avg, 255, cv2.THRESH_BINARY)
@@ -78,8 +80,9 @@ def getRegister(zeroImage, blurValue = 5, threshold = 3):
     for i in range(424):
         for j in range(512):
             colorId = color_depth_map[512 * i + j]
-            if colorId != -1: #mask[i][j] == 255 and colorId != -1:
+            if mask[i][j] == 255 and colorId != -1:
                 registerPoint(i, j, colorId)
+    points, tcoords = denoise.voxelDownsample(points, tcoords)
     __v2["listener"].release(__v2["frames"])
     return color, points, tcoords
 
