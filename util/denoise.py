@@ -19,7 +19,7 @@ def voxelGridFilter(points, tcoords, gridsize=0.01):
 			})
 	mask = np.zeros((2 + maxX - minX, 2 + maxY - minY), dtype=np.uint8)
 	offset = (1 - minX, 1 - minY)
-	mask[np.array(voxels.keys()) + offset] = 255
+	mask[[tuple p for p in np.array(voxels.keys()) + offset]] = 255
 	edge = mask - cv2.erode(mask, cv2.getStructuringElement(cv2.MORPH_CROSS, (3, 3)))
 	it = np.nditer(edge, flags=['multi_index'])
 	while not it.finished:
@@ -30,9 +30,9 @@ def voxelGridFilter(points, tcoords, gridsize=0.01):
 		v = voxels[tuple(np.array(point) - offset)]
 		q1, q2, q3, q4 = [], [], [], []
 		for e in v:
-			((q1 if e["p"][0] > point[0] else q2)
-				if e["p"][1] > point[1] else
-			 (q4 if e["p"][0] > point[0] else q3)).append(e)
+			((q1 if e["p"][0] > point[0] * gridsize else q2)
+			     if e["p"][1] > point[1] * gridsize else
+			 (q4 if e["p"][0] > point[0] * gridsize else q3)).append(e)
 		if len(q1) > 0:
 			voxels[(point, 'q1')] = q1
 		if len(q2) > 0:
