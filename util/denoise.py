@@ -6,13 +6,13 @@ import numpy as np
 def voxelGridFilter(points, tcoords, gridsize=0.01):
 	voxels = {}
 	print len(points)
-	maxX, maxY, minX, minY = sys.maxint, sys.maxint, -sys.maxint - 1, -sys.maxint - 1
+	maxX, maxY, minX, minY = -sys.maxint - 1, -sys.maxint - 1, sys.maxint, sys.maxint
 	for i in range(len(points)):
 		n = tuple(map(lambda x: int(round(x / gridsize)),np.copy(points[i]))[0:2])
 		if n not in voxels:
 			voxels[n] = []
-			minX, maxX = max(n[0], minX), min(n[0], maxX)
-			minY, maxY = max(n[1], minY), min(n[1], maxY)
+			minX, maxX = min(n[0], minX), max(n[0], maxX)
+			minY, maxY = min(n[1], minY), max(n[1], maxY)
 		voxels[n].append({
 			"p" : points[i],
 			"t" : tcoords[i]
