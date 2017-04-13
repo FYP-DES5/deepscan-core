@@ -207,7 +207,6 @@ def zero():
     zeroImage = kinect.getVideo()
 
 def scan():
-    print('diu')
     global zeroImage
     if zeroImage is None:
         print('please run zero() first')
