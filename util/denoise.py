@@ -19,19 +19,13 @@ def voxelGridFilter(points, tcoords, gridsize=0.01):
 			})
 	mask = np.zeros((2 + maxX - minX, 2 + maxY - minY), dtype=np.uint8)
 	mask[np.array(voxels.keys()) + (1 - minX, 1 - minY)] = 255
-	contours, hierachy = cv2.findContours(mask, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
-	largestContour = max(contours, key=cv2.contourArea)
-	targetPoints = int(round(8 * len(voxels) ** 0.5))
-	contourPoints = []
-	for i in range(len(largestContour)):
-		p1 = largestContour[i - 1][0]
-		p2 = largestContour[i][0]
-		diff = p2 - p1
-		mag = max(*[abs(n) for n in diff])
-		step = np.array(diff) / mag
-		for j in range(mag):
-			contourPoints.append(tuple(p1 + diff * j))
-	for point in contourPoints:
+	edge = mask - cv2.erode(mask, cv2.getStructuringElement(cv2.MORPH_CROSS, (3, 3)))
+	it = np.nditer(edge, flags=['multi_index'])
+	while not it.finished:
+		if it[0] == 0:
+			it.iternext()
+			continue
+		point = it.multi_index
 		v = voxels[point]
 		q1, q2, q3, q4 = [], [], [], []
 		for e in v:
@@ -47,6 +41,7 @@ def voxelGridFilter(points, tcoords, gridsize=0.01):
 		if len(q4) > 0:
 			voxels[(point, 'q4')] = q4
 		del voxels[point]
+		it.iternext()
 	rp = [np.average(np.array([e["p"] for e in voxels[n]]), axis=0) for n in voxels]
 	rt = [np.average(np.array([e["t"] for e in voxels[n]]), axis=0) for n in voxels]
 	return rp, rt
