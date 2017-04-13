@@ -23,31 +23,32 @@ class Server:
                 print opcode is 1, opcode is 2, opcode is 3, opcode is 4, opcode is 5, opcode is 6
                 print opcode == 1, opcode == 2, opcode == 3, opcode == 4, opcode == 5, opcode == 6
                 if opcode is 1: # start
-                    if not self.started:
+                    if not self.kinectStarted:
                         core.start()
+                        self.kinectStarted = True
                         self.sendSuccess()
                     else:
                         self.sendFail()
                 elif opcode is 2: # end
-                    if self.started:
+                    if self.kinectStarted:
                         kinect.stop()
                     self.sendSuccess()
                 elif opcode is 3: # zero
-                    if not self.started:
+                    if not self.kinectStarted:
                         self.sendFail()
                     else:
                         core.zero()
                         self.sendSuccess()
                 elif opcode is 4: # scan
-                    if not self.started:
+                    if not self.kinectStarted:
                         self.sendFail()
                     else:
-                        arr = core.scan()
-                        arr = np.arange(3*15*10, dtype=np.uint8).reshape((10, 15, 3))
+                        core.scan()
+                        # arr = np.arange(3*15*10, dtype=np.uint8).reshape((10, 15, 3))
                         self.sendSuccess()
-                        self.sendArr(arr)
+                        # self.sendArr(arr)
                 elif opcode is 5: # get image
-                    if not self.started:
+                    if not self.kinectStarted:
                         self.sendFail()
                     else:
                         arr = kinect.getVideo()
