@@ -38,10 +38,14 @@ def voxelGridFilter(points, tcoords, gridsize=0.01):
 			((q1 if e["p"][0] > point[0] else q2)
 				if e["p"][1] > point[1] else
 			 (q4 if e["p"][0] > point[0] else q3)).append(e)
-		voxels[(point, 'q1')] = q1
-		voxels[(point, 'q2')] = q2
-		voxels[(point, 'q3')] = q3
-		voxels[(point, 'q4')] = q4
+		if len(q1) > 0:
+			voxels[(point, 'q1')] = q1
+		if len(q2) > 0:
+			voxels[(point, 'q2')] = q2
+		if len(q3) > 0:
+			voxels[(point, 'q3')] = q3
+		if len(q4) > 0:
+			voxels[(point, 'q4')] = q4
 		del voxels[point]
 	rp = [np.average(np.array([e["p"] for e in voxels[n]]), axis=0) for n in voxels]
 	rt = [np.average(np.array([e["t"] for e in voxels[n]]), axis=0) for n in voxels]
