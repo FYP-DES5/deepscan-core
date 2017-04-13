@@ -243,8 +243,11 @@ def scan():
         newPoints = xToPoints(x, fixed)
         alterPoints(points, newPoints)
     renWin.Render()
+    ren.ResetCamera()
     iren.Start()
-    screenshot(renWin, 'result.png')
+    screenshot(renWin, '/Users/admin/Desktop/result.png')
+    format.saveImage('/Users/admin/Desktop/zero.png', zeroImage)
+    format.saveImage('/Users/admin/Desktop/book.png', img)
 
 a = start
 b = zero

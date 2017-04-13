@@ -64,7 +64,7 @@ def getRegister(zeroImage, blurValue = 5, threshold = 3):
     avg = np.average(diff)
     print avg
     ret, mask = cv2.threshold(diff, avg, 255, cv2.THRESH_BINARY)
-    _, contours, hierachy = cv2.findContours(depth, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+    contours, hierachy = cv2.findContours(mask, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
     largestContour = max(contours, key=cv2.contourArea)
     mask[:] = 0 # reset
     cv2.drawContours(mask, [largestContour], 0, (255,), -1)
@@ -82,7 +82,7 @@ def getRegister(zeroImage, blurValue = 5, threshold = 3):
             x, y = colorId % 1920, colorId / 1920
             if mask[y][x] == 255 and colorId != -1:
                 registerPoint(x, y, i, j)
-    points, tcoords = denoise.voxelDownsample(points, tcoords)
+    points, tcoords = denoise.voxelGridFilter(points, tcoords, gridsize=0.0375)
     __v2["listener"].release(__v2["frames"])
     return color, points, tcoords
 
@@ -95,8 +95,6 @@ def getVideo(rot90=0):
     elif __version == 'v2':
         __v2["frames"] = __v2["listener"].waitForNewFrame()
         image = np.copy(__v2["frames"]["color"].asarray())
-        import cv2
-        print str(cv2.imwrite('/Users/admin/Desktop/test.png', image))
         __v2["listener"].release(__v2["frames"])
     return np.rot90(image, k=rot90)
 

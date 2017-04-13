@@ -1,8 +1,22 @@
 import cv2
 import gdfmm
+import numpy as np
 
-def voxelDownsample(points, tcoords, mask):
-    return points, tcoords
+def voxelGridFilter(points, tcoords, gridsize=0.01):
+	voxels = {}
+	print len(points)
+	for i in range(len(points)):
+		n = tuple(map(lambda x: round(x / gridsize),np.copy(points[i]))[0:2])
+		if n not in voxels:
+			voxels[n] = []
+		voxels[n].append({
+			"p" : points[i],
+			"t" : tcoords[i]
+			})
+	rp = map(lambda n: np.average(np.array(map(lambda e: e["p"], voxels[n])), axis=0), voxels)
+	rt = map(lambda n: np.average(np.array(map(lambda e: e["t"], voxels[n])), axis=0), voxels)
+	print len(rp)
+	return rp, rt
 
 def inpaint(bgr, depth):
     pass
