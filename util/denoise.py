@@ -13,37 +13,35 @@ def voxelGridFilter(points, tcoords, gridsize=0.01):
 			voxels[n] = []
 			minX, maxX = min(n[0], minX), max(n[0], maxX)
 			minY, maxY = min(n[1], minY), max(n[1], maxY)
-			print n
 		voxels[n].append({
 			"p" : points[i],
 			"t" : tcoords[i]
 			})
 	mask = np.zeros((3 + maxX - minX, 3 + maxY - minY), dtype=np.uint8)
 	offset = (1 - minX, 1 - minY)
-	print minX, minY, maxX, maxY, offset
-	mask[np.array(voxels.keys()) + offset] = 255
+	for k in voxels.keys():
+		mask[tuple(np.array(k) + offset)] = 255
 	edge = mask - cv2.erode(mask, cv2.getStructuringElement(cv2.MORPH_CROSS, (3, 3)))
 	it = np.nditer(edge, flags=['multi_index'])
 	while not it.finished:
-		print str(it[0]) + '->' + str(tuple(np.array(it.multi_index) - offset))
 		if it[0] == 0:
 			pass
-		it.iternext()
-		continue
-		point = it.multi_index
-		v = voxels[tuple(np.array(point) - offset)]
+			it.iternext()
+			continue
+		point = tuple(np.array(it.multi_index) - offset)
+		v = voxels[point]
 		q1, q2, q3, q4 = [], [], [], []
 		for e in v:
-			((q1 if e["p"][0] > point[0] else q2)
-				if e["p"][1] > point[1] else
-			 (q4 if e["p"][0] > point[0] else q3)).append(e)
-		if len(q1) > 0:
+			((q1 if e["p"][0] > point[0] * gridsize else q2)
+			     if e["p"][1] > point[1] * gridsize else
+			 (q4 if e["p"][0] > point[0] * gridsize else q3)).append(e)
+		if len(q1) > 3:
 			voxels[(point, 'q1')] = q1
-		if len(q2) > 0:
+		if len(q2) > 3:
 			voxels[(point, 'q2')] = q2
-		if len(q3) > 0:
+		if len(q3) > 3:
 			voxels[(point, 'q3')] = q3
-		if len(q4) > 0:
+		if len(q4) > 3:
 			voxels[(point, 'q4')] = q4
 		del voxels[point]
 		it.iternext()
