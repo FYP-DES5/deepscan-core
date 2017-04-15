@@ -55,7 +55,7 @@ class EdgeImprover:
 		v = np.array([x, y, 0, 0, 0])
 		for i in range(2, 5):
 			n = ns[i - 2]
-			v[i] = -np.dot(v[[0, 1]], n[[0, 1]]) / n[2]
+			v[i] = -np.dot(v[[0, 1]], n[[0, 1]]) / n[i]
 		return v
 	@staticmethod
 	def __fitPointsToPlanes(points):
