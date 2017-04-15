@@ -166,7 +166,7 @@ def voxelGridFilter(points, tcoords, gridsize=0.01):
 			voxels[n] = []
 			minX, maxX = min(n[0], minX), max(n[0], maxX)
 			minY, maxY = min(n[1], minY), max(n[1], maxY)
-		voxels[n].append(np.hstack(points[i], tcoords[i])
+		voxels[n].append(np.hstack(points[i], tcoords[i]))
 	EdgeImprover(voxels, gridsize).run()
 	rp = [np.average(np.array([e[0:3] for e in voxels[n]]), axis=0) for n in voxels]
 	rt = [np.average(np.array([e[3:5] for e in voxels[n]]), axis=0) for n in voxels]
