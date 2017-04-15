@@ -42,7 +42,7 @@ class EdgeImprover:
 			self.voxels[(point, 'calibrated')] = self.__genVFromXYNNN(xy[0], xy[1], ns)
 			self.toBeDeleted.append(point)
 			it.iternext()
-		for x in toBeDeleted:
+		for x in self.toBeDeleted:
 			del self.voxels[x]
 	@staticmethod
 	def __getNeighborhoodPoints(voxels, x, y):
