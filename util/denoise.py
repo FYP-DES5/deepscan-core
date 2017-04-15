@@ -36,7 +36,7 @@ class EdgeImprover:
 			center = np.array(point, dtype=np.float64) * gridsize
 			targetAreaRatio = len(voxels[point]) / float(modeGridPoints)
 			xy = self.__calculateBestSample(center, centroid, gridsize, targetAreaRatio)
-			voxels[(x, 'calibrated')] = self.__genVFromXYNNN(*xy, ns)
+			voxels[(x, 'calibrated')] = self.__genVFromXYNNN(xy[0], xy[1], ns)
 			self.toBeDeleted.append(point)
 			it.iternext()
 		for x in toBeDeleted:
