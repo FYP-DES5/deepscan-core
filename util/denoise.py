@@ -33,7 +33,7 @@ class EdgeImprover:
 			if it[0] == 0:
 				it.iternext()
 				continue
-			point = tuple(np.array(it.multi_index) - offset)
+			point = tuple(np.array(it.multi_index) - self.offset)
 			points = self.__getNeighborhoodPoints(self.voxels, point)
 			centroid, ns = self.__fitPointsToPlanes(points)
 			center = np.array(point, dtype=np.float64) * gridsize
