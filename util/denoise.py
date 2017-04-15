@@ -28,7 +28,7 @@ class EdgeImprover:
 			frequencies[frequency] = 1 + frequencies.get(frequency, 0)
 			it.iternext()
 		modeGridPoints = max(frequencies, key=lambda k: frequencies[k])
-		it = np.nditer(edge, flags=['multi_index'])
+		it = np.nditer(self.edge, flags=['multi_index'])
 		while not it.finished:
 			if it[0] == 0:
 				it.iternext()
