@@ -1,6 +1,7 @@
 import socket
 import numpy as np
 import core
+from util import format
 from experimental import mockVisualizer
 
 class Server:
@@ -9,6 +10,7 @@ class Server:
         self.s.bind((hostname, port))
         self.s.listen(1)
         self.kinectStarted = False
+        self.tempFolder = format.TempFolder()
     def start(self):
         print 'waiting for connection...'
         self.conn, self.addr = self.s.accept()
@@ -46,8 +48,8 @@ class Server:
                         core.scan()
                         # arr = np.arange(3*15*10, dtype=np.uint8).reshape((10, 15, 3))
                         self.sendSuccess()
-                        # self.sendArr(arr)
-                        self.sendArr(arr)
+                        # self.sendImage(arr)
+                        self.sendImage(arr)
                 elif self.opcode is 5: # get image
                     if not self.kinectStarted:
                         self.sendFail()
@@ -55,10 +57,13 @@ class Server:
                         arr = kinect.getVideo()
                         arr = np.arange(3*15*10, dtype=np.uint8).reshape((10, 15, 3))
                         self.sendSuccess()
-                        self.sendArr(arr)
+                        self.sendImage(arr)
                 elif self.opcode is 6: # start visualizer
                     self.sendSuccess()
                     mockVisualizer.start()
+                elif self.opcode is 7: # cleanup temp folder
+
+                    self.sendSuccess()
         finally:
             self.conn.close()
     def sendSuccess(self):
@@ -67,8 +72,7 @@ class Server:
     def sendFail(self):
         self.conn.send(np.uint8(1).tobytes())
         self.conn.send(np.uint8(self.opcode).tobytes())
-    def sendArr(self, arr):
-        self.conn.send(np.array(arr.shape, dtype=np.uint32).tobytes('C'))
-        self.conn.send(arr.tobytes('C'))
+    def sendImage(self, arr):
+        self.conn.send(self.tempFolder.saveTempImage(arr))
 
 Server().start()
