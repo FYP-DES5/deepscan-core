@@ -88,7 +88,7 @@ class EdgeImprover:
 			# swap x and y of input
 			center[[0, 1]] = center[[1, 0]]
 			centroid[[0, 1]] = centroid[[1, 0]]
-			yx = __calculateBestSample(center, centroid, gridsize, targetAreaRatio)
+			yx = EdgeImprover.__calculateBestSample(center, centroid, gridsize, targetAreaRatio)
 			# swap x and y of output
 			return yx[[1, 0]]
 		# if centroid is above
@@ -96,7 +96,7 @@ class EdgeImprover:
 			# reflect y of input
 			center[1] = -center[1]
 			centroid[1] = -centroid[1]
-			x_negY = __calculateBestSample(center, centroid, gridsize, targetAreaRatio)
+			x_negY = EdgeImprover.__calculateBestSample(center, centroid, gridsize, targetAreaRatio)
 			# reflect y of output
 			return x_negY * [1, -1]
 		# if centroid is to the right
@@ -104,7 +104,7 @@ class EdgeImprover:
 			# reflect y of input
 			center[0] = -center[0]
 			centroid[0] = -centroid[0]
-			negX_y = __calculateBestSample(center, centroid, gridsize, targetAreaRatio)
+			negX_y = EdgeImprover.__calculateBestSample(center, centroid, gridsize, targetAreaRatio)
 			# reflect y of output
 			return negX_y * [-1, 1]
 		# valid assumption: centroid is between S45W and S, ratio <= 0.5
