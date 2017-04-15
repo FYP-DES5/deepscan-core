@@ -39,7 +39,9 @@ class EdgeImprover:
 			center = np.array(point, dtype=np.float64) * self.gridsize
 			targetAreaRatio = len(self.voxels[point]) / float(modeGridPoints)
 			xy = self.__calculateBestSample(center, centroid, self.gridsize, targetAreaRatio)
-			self.voxels[(point, 'calibrated')] = [self.__genVFromXYNNN(xy[0], xy[1], ns)]
+			new = [self.__genVFromXYNNN(xy[0] - centroid[0], xy[1] - centroid[1], ns) + centroid]
+			print new
+			self.voxels[(point, 'calibrated')] = new
 			self.toBeDeleted.append(point)
 			it.iternext()
 		for x in self.toBeDeleted:
@@ -72,6 +74,7 @@ class EdgeImprover:
 		return centroid, map(getNormal, range(2, 5))
 	@staticmethod
 	def __calculateBestSample(center, centroid, gridsize, targetAreaRatio):
+		print center, centroid
 		# const center, const centroid
 		center = np.copy(center)
 		centroid = np.copy(centroid[[0, 1]])
