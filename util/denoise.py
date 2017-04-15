@@ -14,7 +14,7 @@ class EdgeImprover:
 		self.edge = self.mask - cv2.erode(self.mask, cv2.getStructuringElement(cv2.MORPH_CROSS, (3, 3)))
 		self.toBeDeleted = []
 	def run(self):
-		it = np.nditer(edge, flags=['multi_index'])
+		it = np.nditer(self.edge, flags=['multi_index'])
 		frequencies = {}
 		while not it.finished:
 			if it[0] != 0:
