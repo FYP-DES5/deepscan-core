@@ -21,6 +21,9 @@ class EdgeImprover:
 				it.iternext()
 				continue
 			point = tuple(np.array(it.multi_index) - self.offset)
+			if point not in self.voxels:
+				it.iternext()
+				continue
 			frequency = len(self.voxels[point])
 			frequencies[frequency] = 1 + frequencies.get(frequency, 0)
 			it.iternext()
