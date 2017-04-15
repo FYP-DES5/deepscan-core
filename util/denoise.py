@@ -4,7 +4,7 @@ import sys
 import numpy as np
 
 class EdgeImprover:
-	def __init__(self, voxels, gridsize):
+	def __init__(self, voxels, gridsize, minX, minY, maxX, maxY):
 		self.voxels = voxels
 		self.gridsize = gridsize
 		self.mask = np.zeros((3 + maxX - minX, 3 + maxY - minY), dtype=np.uint8)
@@ -167,7 +167,7 @@ def voxelGridFilter(points, tcoords, gridsize=0.01):
 			minX, maxX = min(n[0], minX), max(n[0], maxX)
 			minY, maxY = min(n[1], minY), max(n[1], maxY)
 		voxels[n].append(np.hstack((points[i], tcoords[i])))
-	EdgeImprover(voxels, gridsize).run()
+	EdgeImprover(voxels, gridsize, minX, minY, maxX, maxY).run()
 	rp = [np.average(np.array([e[0:3] for e in voxels[n]]), axis=0) for n in voxels]
 	rt = [np.average(np.array([e[3:5] for e in voxels[n]]), axis=0) for n in voxels]
 	return rp, rt
