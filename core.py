@@ -6,28 +6,6 @@ from scipy.sparse import linalg as spla
 import vtk
 from util import kinect, format
 
-def genArrays(width, depth, maxHeight):
-    points = np.zeros((width+1, depth+1, 3))
-    lastx, lastz, length = 0.0, 0.0, 0.0
-    for i in range(width + 1):
-        x, z = i * 1.0 / width, -((i % (width / 2.0) - width / 4.0) ** 2.0) / (width / 4.0) ** 2.0 * maxHeight + maxHeight
-        for j in range(depth + 1):
-            y = j * 1.0 / depth
-            points[i][j] = (x, y, z)
-        length += ((lastx - x) ** 2 + (lastz - z) ** 2) ** .5
-        lastx, lastz = x, z
-    points = np.reshape(points, ((width + 1) * (depth + 1), 3))
-    triangles = np.zeros((width, depth, 2, 3), int)
-    for i in range(width):
-        for j in range(depth):
-            triangles[i][j][0][0] = (depth + 1) * i + j
-            triangles[i][j][0][1] = (depth + 1) * i + j + 1
-            triangles[i][j][0][2] = (depth + 1) * (i + 1) + j
-            triangles[i][j][1][0] = (depth + 1) * (i + 1) + j
-            triangles[i][j][1][1] = (depth + 1) * i + j + 1
-            triangles[i][j][1][2] = (depth + 1) * (i + 1) + j + 1
-    triangles = np.reshape(triangles, (width * depth * 2, 3))
-    return points, triangles, length
 def genPoints(ptArray):
     points = vtk.vtkPoints()
     points.SetNumberOfPoints(len(ptArray))
@@ -38,16 +16,6 @@ def alterPoints(points, newPoints):
     for i in range(len(newPoints)):
         points.SetPoint(i, [newPoints[i][0], newPoints[i][1], 0])
     points.Modified()
-def genPolys(triangles):
-    polys = vtk.vtkCellArray()
-    polys.SetNumberOfCells(triangles.shape[0])
-    for i in range(triangles.shape[0]):
-        ids = vtk.vtkIdList()
-        ids.SetNumberOfIds(3)
-        for j in range(3):
-            ids.SetId(j, triangles[i][j])
-        polys.InsertNextCell(ids)
-    return polys
 def genTcoords(tcoordArray):
     tc = vtk.vtkFloatArray()
     tc.SetNumberOfComponents(2)
@@ -71,11 +39,6 @@ def genMap(polyData):
     mapper = vtk.vtkPolyDataMapper()
     mapper.SetInputData(polyData)
     return mapper
-def genActor(mapper, texture):
-    actor = vtk.vtkActor()
-    actor.SetMapper(mapper)
-    actor.SetTexture(texture)
-    return actor
 def genRendererWindow(actor):
     ren = vtk.vtkRenderer()
     renWin = vtk.vtkRenderWindow()
@@ -86,30 +49,18 @@ def genRendererWindow(actor):
     ren.SetBackground(1, 1, 1)
     renWin.SetSize(500, 500)
     renWin.Render()
-    # cam1 = ren.GetActiveCamera()
-    # cam1.Zoom(1.5)
     iren.Initialize()
-    # renWin.Render()
     return ren, renWin, iren
-def screenshot(renWin, filename):
+def screenshot(renWin, filename, mag=1):
     filter = vtk.vtkWindowToImageFilter()
     filter.SetInput(renWin)
     filter.SetInputBufferTypeToRGBA()
+    filter.SetMagnification(mag)
     filter.Update()
     writer = vtk.vtkPNGWriter()
     writer.SetFileName(filename)
     writer.SetInputConnection(filter.GetOutputPort())
     writer.Write()
-# def collectDisplayPoints(ren, renWin, points):
-#     num = points.GetNumberOfPoints()
-#     displayPoints = []
-#     for i in range(num):
-#         point = points.GetPoint(i)
-#         ren.SetWorldPoint(point[0], point[1], point[2], 1)
-#         ren.WorldToDisplay()
-#         dispPt = ren.GetDisplayPoint()
-#         displayPoints.append(dispPt)
-#     return displayPoints
 def genNewTcoords(displayPoints):
     tc = vtk.vtkFloatArray()
     tc.SetNumberOfComponents(2)

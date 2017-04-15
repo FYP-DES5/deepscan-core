@@ -62,7 +62,8 @@ class Server:
                     self.sendSuccess()
                     mockVisualizer.start()
                 elif self.opcode is 7: # cleanup temp folder
-
+                    del self.tempFolder
+                    self.tempFolder = format.TempFolder()
                     self.sendSuccess()
         finally:
             self.conn.close()
