@@ -36,10 +36,10 @@ class EdgeImprover:
 			point = tuple(np.array(it.multi_index) - self.offset)
 			points = self.__getNeighborhoodPoints(self.voxels, *point)
 			centroid, ns = self.__fitPointsToPlanes(points)
-			center = np.array(point, dtype=np.float64) * self.gridsize - centroid[[0, 1]]
+			center = np.array(point, dtype=np.float64) * self.gridsize
 			targetAreaRatio = len(self.voxels[point]) / float(modeGridPoints)
 			xy = self.__calculateBestSample(center, centroid, self.gridsize, targetAreaRatio)
-			self.voxels[(point, 'calibrated')] = [self.__genVFromXYNNN(xy[0], xy[1], ns) + centroid]
+			self.voxels[(point, 'calibrated')] = [self.__genVFromXYNNN(xy[0], xy[1], ns)]
 			self.toBeDeleted.append(point)
 			it.iternext()
 		for x in self.toBeDeleted:
