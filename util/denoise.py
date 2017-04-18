@@ -65,7 +65,7 @@ class EdgeImprover:
 			points = np.array(points)
 		centroid = np.average(points, axis=0)
 		pointsRelativeToCentroid = points - centroid
-		timesTable = np.dot(pointsRelativeToCentroid.T, pointsRelativeToCentroid)
+		timesTable = np.dot(pointsRelativeToCentroid.T, pointsR elativeToCentroid)
 		def getNormal(n):
 			D = np.linalg.det(timesTable[0:2, 0:2])
 			a = np.linalg.det(timesTable[0:2, (1,n)]) / D
@@ -84,7 +84,7 @@ class EdgeImprover:
 		if targetAreaRatio > 0.5:
 			# equivalent to reversing direction and finding complement
 			d = -d
-			centroid = centroid + d
+			centroid = center - d
 			targetAreaRatio = 1 - targetAreaRatio
 		# if horizontal d
 		if abs(d[0]) > abs(d[1]):
