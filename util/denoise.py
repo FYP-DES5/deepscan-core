@@ -65,7 +65,7 @@ class EdgeImprover:
 			points = np.array(points)
 		centroid = np.average(points, axis=0)
 		pointsRelativeToCentroid = points - centroid
-		timesTable = np.dot(pointsRelativeToCentroid.T, pointsR elativeToCentroid)
+		timesTable = np.dot(pointsRelativeToCentroid.T, pointsRelativeToCentroid)
 		def getNormal(n):
 			D = np.linalg.det(timesTable[0:2, 0:2])
 			a = np.linalg.det(timesTable[0:2, (1,n)]) / D
