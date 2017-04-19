@@ -186,12 +186,20 @@ def voxelGridFilter(points, tcoords, gridsize=0.01):
 	ax.set_xlabel('X')
 	ax.set_ylabel('Y')
 	ax.set_zlabel('Z')
-	plt.show()
 
 
 	EdgeImprover(voxels, gridsize, minX, minY, maxX, maxY).run()
 	rp = [np.average(np.array([e[0:3] for e in voxels[n]]), axis=0) for n in voxels]
 	rt = [np.average(np.array([e[3:5] for e in voxels[n]]), axis=0) for n in voxels]
+
+	fig = plt.figure()
+	ax = fig.add_subplot(111, projection='3d')
+	ax.scatter(*([map(lambda p: p[i], points) for i in range(3)]), c='r', s=0.5)
+	ax.scatter(*([map(lambda p: p[i], rp) for i in range(3)]), c='b')
+	ax.set_xlabel('X')
+	ax.set_ylabel('Y')
+	ax.set_zlabel('Z')
+	plt.show()
 
 	return rp, rt
 
