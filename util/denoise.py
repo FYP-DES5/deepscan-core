@@ -1,5 +1,7 @@
 import cv2
 # import gdfmm
+from mpl_toolkits.mplot3d import Axes3D
+import matplotlib.pyplot as plt
 import sys
 import numpy as np
 
@@ -174,7 +176,7 @@ def voxelGridFilter(points, tcoords, gridsize=0.01):
 			minY, maxY = min(n[1], minY), max(n[1], maxY)
 		voxels[n].append(np.hstack((points[i], tcoords[i])))
 
-	
+
 	rp = [np.average(np.array([e[0:3] for e in voxels[n]]), axis=0) for n in voxels]
 	rt = [np.average(np.array([e[3:5] for e in voxels[n]]), axis=0) for n in voxels]
 
