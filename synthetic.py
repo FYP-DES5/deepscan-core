@@ -1,19 +1,28 @@
 from __future__ import print_function
 import numpy as np
 LA = np.linalg
-import lsmr as spla
+from scipy.sparse import linalg as spla
+from scipy.special import ellipeinc
 import vtk
 
+def fuckThisOne(x=16 * np.pi):
+    return np.sqrt(2) * ellipeinc(x, 0.5)
+def rebase(x, z):
+    return (x + z) * 8 * np.pi, (1 - x + z)
+def unrebase(x, z):
+    return x / (16 * np.pi) - z, x / (16 * np.pi) + z
 def genArrays(width, depth, maxHeight):
     points = np.zeros((width+1, depth+1, 3))
-    lastx, lastz, length = 0.0, 0.0, 0.0
+    length = fuckThisOne()
     for i in range(width + 1):
-        x, z = i * 1.0 / width, -((i % (width / 2.0) - width / 4.0) ** 2.0) / (width / 4.0) ** 2.0 * maxHeight + maxHeight
         for j in range(depth + 1):
-            y = j * 1.0 / depth
-            points[i][j] = (x, y, z)
-        length += ((lastx - x) ** 2 + (lastz - z) ** 2) ** .5
-        lastx, lastz = x, z
+            x = i * 1.0 / width
+            z = j * 1.0 / width
+            rbx, rbz = rebase(x, z)
+            y = np.sin(rbx) * maxHeight / 2
+            rbz = rbz * fuckThisOne() / (16 * np.pi)
+            x, z = unrebase(rbx, rbz)
+            points[i, j] = [x, y, z]
     points = np.reshape(points, ((width + 1) * (depth + 1), 3))
     triangles = np.zeros((width, depth, 2, 3), int)
     for i in range(width):
@@ -52,13 +61,16 @@ def genTcoords(width, depth, arclength):
     tc.SetNumberOfComponents(2)
     lastx, lastz, length = 0.0, 0.0, 0.0
     for i in range(width + 1):
-        x, z = i * 1.0 / width, -((i % (width / 2.0) - width / 4.0) ** 2.0) / (width / 4.0) ** 2.0 * maxHeight + maxHeight
-        length += ((lastx - x) ** 2 + (lastz - z) ** 2) ** .5
-        lerpAmount = length / arclength
-        lastx, lastz = x, z
         for j in range(depth + 1):
-            y = j * 1.0 / depth
-            tc.InsertTuple2((depth + 1) * i + j, lerpAmount, y)
+            x = i * 1.0 / width
+            z = j * 1.0 / width
+            rbx, rbz = rebase(x, z)
+            # rbz = rbz * fuckThisOne() / (16 * np.pi)
+            rbrbx = fuckThisOne(rbx) / fuckThisOne()
+            rbrby = rbz - 1
+            x, y = rbrbx - rbrby / 2, rbrbx + rbrby / 2
+            print(i, j, rbz, rbrbx, rbrby, x, y)
+            tc.InsertTuple2((depth + 1) * i + j, x, y)
     return tc
 def genReader(filename):
     reader = vtk.vtkPNGReader()
@@ -172,10 +184,9 @@ def conformalGenAB(points, triangles, fixed):
                  np.hsplit(fixed, [1])[1].T.flatten())
     a = np.hstack([a[i] for i in range(len(a)) if not i % 2])
     return a, b
-def solveSparse(a, b, xest=None):
-    # x, residuals, rank, s = LA.lstsq(a, b)
-    x, istop, itn, normr, normar, normA, condA, normx, xarr = spla.lsmr(a, b, xest=xest)
-    return x, xarr
+def solveSparse(a, b):
+    x, istop, itn, normr, normar, normA, condA, normx = spla.lsmr(a, b)
+    return x
 def xToPoints(x, fixed):
     fixedIndexes = fixed.T[0]
     fixedPoints = np.hsplit(fixed, [1])[1]
@@ -186,12 +197,12 @@ def xToPoints(x, fixed):
         for i in range(len(newPoints) * 2 - 1)])
     return newPoints
 
-maxHeight, width, depth = 0.2, 40, 40
+maxHeight, width, depth = 0.2, 30, 30
 ptArray, triArray, arclength = genArrays(width, depth, maxHeight)
 points = genPoints(ptArray, maxHeight)
 polys = genPolys(triArray)
 tcoords = genTcoords(width, depth, arclength)
-reader = genReader('custom1.png')
+reader = genReader('input.png')
 texture = genTexture(reader)
 polyData = genPolyData(points, polys, tcoords)
 mapper = genMap(polyData)
@@ -209,21 +220,10 @@ if False: # switch with screenshot
     alterActor(actor, texture)
 if True: # does conformal mapping
     fixed = np.array([[0, 0, 0],
-                      #[40, 0, 1],
-                      #[len(ptArray) - 41, 1, 0],
                       [len(ptArray) - 1, 1, 1]])
     a, b = conformalGenAB(ptArray, triArray, fixed)
     print('solving Ax=B problem..')
-    x, xarr = solveSparse(a, b)
-    print('number of iterations:', len(xarr))
-    if True: # show animation
-        for i in range(len(xarr)):
-            newPoints = xToPoints(xarr[i], fixed)
-            alterPoints(points, newPoints)
-            renWin.Render()
-            if False:
-                # save file
-                screenshot(renWin, 'result-%03d.png' % i)
+    x = solveSparse(a, b)
     newPoints = xToPoints(x, fixed)
     alterPoints(points, newPoints)
 renWin.Render()
