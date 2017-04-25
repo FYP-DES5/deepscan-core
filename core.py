@@ -157,12 +157,12 @@ def zero():
     global zeroImage
     zeroImage = kinect.getVideo()
 
-def scan():
+def scan(gridsize=0.03):
     global zeroImage
     if zeroImage is None:
         print('please run zero() first')
         return
-    img, ptArray, tcoordArray = kinect.getRegister(zeroImage)
+    img, ptArray, tcoordArray = kinect.getRegister(zeroImage, gridsize=gridsize)
     format.saveImage('raw.png', img)
     points = genPoints(ptArray)
     tcoords = genTcoords(tcoordArray)

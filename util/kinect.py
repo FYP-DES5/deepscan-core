@@ -42,7 +42,7 @@ def init(version):
         __v2["device"].setIrAndDepthFrameListener(__v2["listener"])
         __v2["device"].start()
 
-def getRegister(zeroImage, blurValue = 5, threshold = 3):
+def getRegister(zeroImage, blurValue = 5, threshold = 3, gridsize=0.0375):
     from pylibfreenect2 import Freenect2, SyncMultiFrameListener
     from pylibfreenect2 import FrameType, Registration, Frame
     global __v2
@@ -82,7 +82,7 @@ def getRegister(zeroImage, blurValue = 5, threshold = 3):
             x, y = colorId % 1920, colorId / 1920
             if mask[y][x] == 255 and colorId != -1:
                 registerPoint(x, y, i, j)
-    points, tcoords = denoise.voxelGridFilter(points, tcoords, gridsize=0.0375)
+    points, tcoords = denoise.voxelGridFilter(points, tcoords, gridsize=gridsize)
     __v2["listener"].release(__v2["frames"])
     return color, points, tcoords
 
