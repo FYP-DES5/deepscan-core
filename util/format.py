@@ -23,6 +23,15 @@ class TempFolder:
         if verbose:
             print 'Saved %s.' % temp.name
         return temp.name
+    def savePickle(self, obj, verbose=True):
+        temp = tempfile.NamedTemporaryFile(delete=False, dir=self.folder, suffix='.p')
+        if verbose:
+            print 'Saving %s...' % temp.name
+        pickle.dump(obj, temp)
+        temp.close()
+        if verbose:
+            print 'Saved %s.' % temp.name
+        return temp.name
 
 def saveImage(name, img, bgr=False, verbose=False):
     name = os.path.abspath(name)

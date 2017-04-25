@@ -17,13 +17,11 @@ class Server:
         try:
             while 1:
                 print 'waiting for data...'
-                self.opcode = self.conn.recv(1)
-                print 'data: %s' % self.opcode
+                self.opcode = self.recvUint8()
+                print 'data: %d' % self.opcode
                 if not self.opcode:
                     break
-                self.opcode = ord(self.opcode[0])
-                print self.opcode is 1, self.opcode is 2, self.opcode is 3, self.opcode is 4, self.opcode is 5, self.opcode is 6
-                print self.opcode == 1, self.opcode == 2, self.opcode == 3, self.opcode == 4, self.opcode == 5, self.opcode == 6
+                self.opcode = self.opcode
                 if self.opcode is 1: # start
                     if not self.kinectStarted:
                         core.start()
@@ -45,17 +43,33 @@ class Server:
                     if not self.kinectStarted:
                         self.sendFail()
                     else:
-                        core.scan()
+                        flags = self.recvUint8()
+                        gridsize = self.recvFloat64()
+                        ext = self.recvStr(self.recvInt32())
+                        rawData = flags & 1
+                        showIntemediate = flags & 2
+                        if rawData:
+                            img, raw = core.scan(rawData=rawData, showIntemediate=showIntemediate,
+                                gridsize=gridsize,
+                                tempFolder=self.tempFolder.folder)
+                        else:
+                            img = core.scan(rawData=rawData, showIntemediate=showIntemediate,
+                                gridsize=gridsize,
+                                tempFolder=self.tempFolder.folder)
                         # arr = np.arange(3*15*10, dtype=np.uint8).reshape((10, 15, 3))
+                        if not img:
+                            self.sendFail()
+                            continue
                         self.sendSuccess()
                         # self.sendImage(arr)
-                        self.sendImage(arr)
+                        self.sendImage(img, ext)
+                        if rawData:
+                            self.sendRawBuffer(raw)
                 elif self.opcode is 5: # get image
                     if not self.kinectStarted:
                         self.sendFail()
                     else:
                         arr = kinect.getVideo()
-                        arr = np.arange(3*15*10, dtype=np.uint8).reshape((10, 15, 3))
                         self.sendSuccess()
                         self.sendImage(arr)
                 elif self.opcode is 6: # start visualizer
@@ -65,6 +79,19 @@ class Server:
                     del self.tempFolder
                     self.tempFolder = format.TempFolder()
                     self.sendSuccess()
+                elif self.opcode is 8: # depth image
+                    if not self.kinectStarted:
+                        self.sendFail()
+                    else:
+                        arr = kinect.getDepth()
+                        self.sendSuccess()
+                        self.sendImage(arr)
+                elif self.opcode is 9: # mesh only
+                    if not self.kinectStarted:
+                        self.sendFail()
+                    else:
+                        core.scan(showMeshOnly=True, tempFolder=self.tempFolder.folder)
+                        self.sendSuccess()
         finally:
             self.conn.close()
     def sendSuccess(self):
@@ -73,7 +100,16 @@ class Server:
     def sendFail(self):
         self.conn.send(np.uint8(1).tobytes())
         self.conn.send(np.uint8(self.opcode).tobytes())
-    def sendImage(self, arr):
-        self.conn.send(self.tempFolder.saveTempImage(arr))
-
+    def sendImage(self, arr, ext='.png'):
+        self.conn.send(self.tempFolder.saveTempImage(arr, ext))
+    def sendRawBuffer(self, obj):
+        self.conn.send(self.tempFolder.savePickle(obj))
+    def recvUint8(self):
+        return ord(self.conn.recv(1))
+    def recvInt32(self):
+        return np.frombuffer(self.conn.recv(4), dtype=np.int32)[0]
+    def recvFloat64(self):
+        return np.frombuffer(self.conn.recv(8), dtype=np.float64)[0]
+    def recvStr(self, size):
+        return self.conn.recv(size)
 Server().start()

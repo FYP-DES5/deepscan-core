@@ -42,7 +42,7 @@ def init(version):
         __v2["device"].setIrAndDepthFrameListener(__v2["listener"])
         __v2["device"].start()
 
-def getRegister(zeroImage, blurValue = 5, threshold = 3, gridsize=0.0375):
+def getRegister(zeroImage, blurValue = 5, threshold = 3, gridsize=0.0375, rawData=False):
     from pylibfreenect2 import Freenect2, SyncMultiFrameListener
     from pylibfreenect2 import FrameType, Registration, Frame
     global __v2
@@ -52,6 +52,15 @@ def getRegister(zeroImage, blurValue = 5, threshold = 3, gridsize=0.0375):
     __v2["frames"] = __v2["listener"].waitForNewFrame()
     color = np.copy(__v2["frames"]["color"].asarray())
     depth = np.copy(__v2["frames"]["depth"].asarray())
+    if rawData:
+        raw = {
+            'color': np.copy(color),
+            'depth': np.copy(depth),
+            'params': {
+                'ir': __v2["device"].getIrCameraParams(),
+                'color': __v2["device"].getColorCameraParams()
+            }
+        }
     denoise.inpaint(color, depth)
     registration = Registration(__v2["device"].getIrCameraParams(),
         __v2["device"].getColorCameraParams())
@@ -84,6 +93,8 @@ def getRegister(zeroImage, blurValue = 5, threshold = 3, gridsize=0.0375):
                 registerPoint(x, y, i, j)
     points, tcoords = denoise.voxelGridFilter(points, tcoords, gridsize=gridsize)
     __v2["listener"].release(__v2["frames"])
+    if rawData:
+        return color, point, tcoords, raw
     return color, points, tcoords
 
 

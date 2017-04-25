@@ -157,12 +157,17 @@ def zero():
     global zeroImage
     zeroImage = kinect.getVideo()
 
-def scan(gridsize=0.03):
+def scan(rawData=False, showIntemediate=False, gridsize=0.03, tempFolder='/tmp', showMeshOnly=False):
     global zeroImage
     if zeroImage is None:
         print('please run zero() first')
-        return
-    img, ptArray, tcoordArray = kinect.getRegister(zeroImage, gridsize=gridsize)
+        if rawData:
+            return None, None
+        return None
+    if rawData:
+        img, ptArray, tcoordArray, raw = kinect.getRegister(zeroImage, gridsize=gridsize, rawData=True)
+    else:
+        img, ptArray, tcoordArray = kinect.getRegister(zeroImage, gridsize=gridsize)
     format.saveImage('raw.png', img)
     points = genPoints(ptArray)
     tcoords = genTcoords(tcoordArray)
@@ -184,7 +189,10 @@ def scan(gridsize=0.03):
 
     ren, renWin, iren = genRendererWindow(triangulation)
     renWin.Render()
-    iren.Start()
+    if showIntemediate or showMeshOnly:
+        iren.Start()
+    if showMeshOnly:
+        return
     if True: # does conformal mapping
         fixed = np.array([[0, 0, 0],
                           [len(ptArray) - 1, 1, 1]])
@@ -195,10 +203,15 @@ def scan(gridsize=0.03):
         alterPoints(points, newPoints)
     ren.ResetCamera()
     renWin.Render()
-    iren.Start()
-    screenshot(renWin, '/Users/admin/Desktop/result.png')
-    format.saveImage('/Users/admin/Desktop/zero.png', zeroImage)
-    format.saveImage('/Users/admin/Desktop/book.png', img)
+    if showIntemediate:
+        iren.Start()
+    screenshot(renWin, '%s/result.png' % tempFolder)
+    format.saveImage('%s/zero.png' % tempFolder, zeroImage)
+    format.saveImage('%s/book.png' % tempFolder, img)
+    final = cv2.imread('%s/result.png' % tempFolder)
+    if rawData:
+        return final, raw
+    return final
 
 a = start
 b = zero
