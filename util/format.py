@@ -14,6 +14,7 @@ class TempFolder:
             self.folder = None
     def saveTempImage(self, img, ext='.png', verbose=False):
         preprocessImage(img, verbose)
+        print 'ext: %s' % ext
         temp = tempfile.NamedTemporaryFile(delete=False, dir=self.folder, suffix=ext)
         if verbose:
             print 'Saving %s...' % temp.name
