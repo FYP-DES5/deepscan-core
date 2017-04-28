@@ -1,6 +1,7 @@
 import socket
 import numpy as np
 import core
+import time
 from util import format
 from experimental import mockVisualizer
 
@@ -96,9 +97,11 @@ class Server:
             self.conn.close()
     def sendSuccess(self):
         self.conn.send(np.uint8(0).tobytes())
+        time.sleep(0.01)
         self.conn.send(np.uint8(self.opcode).tobytes())
     def sendFail(self):
         self.conn.send(np.uint8(1).tobytes())
+        time.sleep(0.01)
         self.conn.send(np.uint8(self.opcode).tobytes())
     def sendImage(self, arr, ext='.png'):
         self.conn.send(self.tempFolder.saveTempImage(arr, ext))
