@@ -57,7 +57,7 @@ class Server:
                                 gridsize=gridsize,
                                 tempFolder=self.tempFolder.folder)
                         # arr = np.arange(3*15*10, dtype=np.uint8).reshape((10, 15, 3))
-                        if not img:
+                        if img is False:
                             self.sendFail()
                             continue
                         self.sendSuccess()
