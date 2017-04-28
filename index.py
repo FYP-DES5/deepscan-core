@@ -105,11 +105,23 @@ class Server:
     def sendRawBuffer(self, obj):
         self.conn.send(self.tempFolder.savePickle(obj))
     def recvUint8(self):
-        return ord(self.conn.recv(1))
+        print 'recv uint8'
+        r = ord(self.conn.recv(1))
+        print r
+        return r
     def recvInt32(self):
-        return np.frombuffer(self.conn.recv(4), dtype=np.int32)[0]
+        print 'recv int32'
+        r = np.frombuffer(self.conn.recv(4), dtype=np.int32)[0]
+        print r
+        return r
     def recvFloat64(self):
-        return np.frombuffer(self.conn.recv(8), dtype=np.float64)[0]
+        print 'recv float64'
+        r = np.frombuffer(self.conn.recv(8), dtype=np.float64)[0]
+        print r
+        return r
     def recvStr(self, size):
-        return self.conn.recv(size)
+        print 'recv char[%d]' % size
+        r = self.conn.recv(size)
+        print r
+        return r
 Server().start()
